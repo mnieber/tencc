@@ -1,22 +1,10 @@
-from argparse import ArgumentParser
-import inspect
 import ast
 import glob
 import os
+from argparse import ArgumentParser
+
 # import sys
 import ruamel.yaml
-
-
-class Visit(ast.NodeVisitor):
-    def generic_visit(self, node):
-        print(node)
-        ast.NodeVisitor.generic_visit(self, node)
-
-
-def doit():
-    src = inspect.getsource(eval('Foo'))
-    st = ast.parse(src)
-    print(st)
 
 
 def get_st(filename):
@@ -27,7 +15,9 @@ def get_st(filename):
 def _get_class_map(source_tree, module_import_path, root_dir):
     class_map = dict()
 
-    top_level_classes = [n for n in source_tree.body if isinstance(n, ast.ClassDef)]
+    top_level_classes = [
+        n for n in source_tree.body if isinstance(n, ast.ClassDef)
+    ]
     for class_node in top_level_classes:
         class_map[class_node.name] = Class(class_node.name, class_node)
 
@@ -61,12 +51,40 @@ def _module_import_path(full_module_filename, root_dir):
 
 
 def create_module(full_module_filename, root_dir):
-    __import__('pudb').set_trace()
     module_import_path = _module_import_path(full_module_filename, root_dir)
     st = get_st(full_module_filename)
     class_map = _get_class_map(st, module_import_path, root_dir)
     module = Module(module_import_path, st, class_map)
     return module
+
+
+def _get_names(source_tree):
+    result = []
+
+    class VisitClasses(ast.NodeVisitor):
+        def visit_Name(self, node):  # noqa
+            result.append(node.id)
+            ast.NodeVisitor.generic_visit(self, node)
+
+    v = VisitClasses()
+    v.visit(source_tree)
+    return result
+
+
+def _get_concepts(names, concept_list):
+    result = list()
+    for concept in concept_list:
+        for name in names:
+            if name in concept['representations']:
+                result.append(concept)
+                break
+    return result
+
+
+def add_concepts(package, concept_list):
+    for module in package.modules:
+        names = _get_names(module.st)
+        module.concepts = _get_concepts(names, concept_list)
 
 
 def get_package_map(root_dir):
@@ -76,7 +94,6 @@ def get_package_map(root_dir):
 
     for full_module_filename in full_module_filenames:
         module = create_module(full_module_filename, root_dir)
-
         package_path = os.path.dirname(module.filename)
         if package_path not in packages:
             packages[package_path] = Package(package_path)
@@ -84,19 +101,6 @@ def get_package_map(root_dir):
         package.modules.append(module)
 
     return packages
-
-
-def _get_classes(source_tree):
-    result = []
-
-    class VisitClasses(ast.NodeVisitor):
-        def visit_ClassDef(self, node):  # noqa
-            result.append(node.name)
-            ast.NodeVisitor.generic_visit(self, node)
-
-    v = VisitClasses()
-    v.visit(source_tree)
-    return result
 
 
 def read_concept_list(filename):
@@ -115,6 +119,10 @@ def _args():  # noqa
 if __name__ == '__main__':
     args = _args()
 
-    concepts = read_concept_list(args.concept_list)
+    concept_list = read_concept_list(args.concept_list)
     package_map = get_package_map(args.root_dir)
+
+    for package in package_map.values():
+        add_concepts(package, concept_list)
+
     print(package_map.keys())
