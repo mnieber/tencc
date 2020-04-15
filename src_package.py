@@ -10,7 +10,7 @@ def _get_st(filename):
 
 def _module_import_path(full_module_filename, root_dir):
     relpath = os.path.relpath(full_module_filename, root_dir)
-    return os.path.splitext(relpath)[0].replace('/', '.')
+    return os.path.splitext(relpath)[0].replace("/", ".")
 
 
 def _create_module(full_module_filename, root_dir):
@@ -18,20 +18,23 @@ def _create_module(full_module_filename, root_dir):
     return Module(module_import_path, _get_st(full_module_filename))
 
 
-def _get_class_map(syntax_tree):
-    class_map = dict()
+def _get_component_map(syntax_tree):
+    component_map = dict()
 
-    top_level_classes = [n for n in syntax_tree.body if isinstance(n, ast.ClassDef)]
-    for class_node in top_level_classes:
-        class_map[class_node.name] = Class(class_node.name, class_node)
+    for node in syntax_tree.body:
+        is_class = isinstance(node, ast.ClassDef)
+        is_function = isinstance(node, ast.FunctionDef)
+        if is_class or is_function:
+            component_map[node.name] = Component(node.name, node, is_class)
 
-    return class_map
+    return component_map
 
 
-class Class:
-    def __init__(self, name, st_node):
+class Component:
+    def __init__(self, name, syntax_tree_node, is_class):
         self.name = name
-        self.st_node = st_node
+        self.is_class = is_class
+        self.syntax_tree_node = syntax_tree_node
         self.concepts = []
 
 
@@ -39,7 +42,7 @@ class Module:
     def __init__(self, filename, syntax_tree):
         self.filename = filename
         self.syntax_tree = syntax_tree
-        self.class_map = _get_class_map(syntax_tree)
+        self.component_map = _get_component_map(syntax_tree)
 
 
 class Package:
@@ -51,7 +54,7 @@ class Package:
 def get_package_map(root_dir):
     package_map = {}
 
-    pattern = os.path.join(os.path.abspath(root_dir), '**/*.py')
+    pattern = os.path.join(os.path.abspath(root_dir), "**/*.py")
     full_module_filenames = glob.glob(pattern, recursive=True)
 
     for full_module_filename in full_module_filenames:
