@@ -1,7 +1,7 @@
 import ramda as _
 
-from .concepts import Concepts, init_concepts  # noqa
 from .packages import Packages, init_packages  # noqa
+from .terms import Terms, init_terms  # noqa
 
 
 def i_(facet_class, member, prefix=None, alt_name=None):

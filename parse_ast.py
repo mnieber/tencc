@@ -6,7 +6,7 @@ from container import Container
 def _args():  # noqa
     parser = ArgumentParser(description=(""))
 
-    parser.add_argument("concept_list")
+    parser.add_argument("terms_filename")
     parser.add_argument("root_dir")
     return parser.parse_args()
 
@@ -14,7 +14,6 @@ def _args():  # noqa
 if __name__ == "__main__":
     args = _args()
 
-    __import__("pudb").set_trace()
-    container = Container(args.root_dir, args.concept_list)
+    container = Container(args.root_dir, args.terms_filename)
     container.run_actions()
     print(container.packages.package_map.keys())
