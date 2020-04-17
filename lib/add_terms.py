@@ -12,7 +12,7 @@ def _get_terms(names, term_list: TermList):
 
 
 def add_terms(package, term_book):
-    for module in package.modules:
+    for module in package.module_by_path:
         names = get_names(module.syntax_tree)
         module.domain_concepts = _get_terms(names, term_book.domain_concepts)
         module.tech_terms = _get_terms(names, term_book.tech_terms)

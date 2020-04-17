@@ -8,15 +8,13 @@ def action_load_terms(ctr):
 
 
 def action_add_terms_to_packages(ctr):
-    def transform(
-        package_map, term_book,
-    ):
-        for package in package_map.values():
+    def transform(package_by_path, term_book):
+        for package in package_by_path.values():
             add_terms(package, term_book)
 
     return map_datas(
-        i_(Packages, "package_map"),
+        i_(Packages, "package_by_path"),
         i_(Terms, "term_book"),
         #
-        transform=transform
+        transform=transform,
     )(ctr)

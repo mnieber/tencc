@@ -16,4 +16,4 @@ if __name__ == "__main__":
 
     container = Container(args.root_dir, args.terms_filename)
     container.run_actions()
-    print(container.packages.package_map.keys())
+    print(container.packages.package_by_path.keys())

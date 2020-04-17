@@ -1,6 +1,6 @@
 class Packages():
     root_dir = ""
-    package_map = {}
+    package_by_path = {}
 
     @staticmethod
     def get(ctr):

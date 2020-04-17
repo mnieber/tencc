@@ -12,7 +12,10 @@ class Container:
         self._create_facets(root_dir, terms_filename)
 
     def run_actions(self):
+        __import__('pudb').set_trace()
         actions.packages.action_find_packages(self)
 
         actions.terms.action_load_terms(self)
         actions.terms.action_add_terms_to_packages(self)
+
+        actions.reporting.action_report_terms(self)
