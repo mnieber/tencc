@@ -8,7 +8,7 @@ class Reports():
         self.reports = []
 
     def reset_root_paths(self):
-        self.root_paths = [""]
+        self.root_paths = ["."]
 
     def find_root_paths(self):
         self.root_paths = find_root_paths(self.root_dir)

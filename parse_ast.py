@@ -26,6 +26,7 @@ def _exit():
 
 
 if __name__ == "__main__":
+    __import__("pudb").set_trace()
     args = _args()
     ctr = Container(args.root_dir, args.terms_filename)
 

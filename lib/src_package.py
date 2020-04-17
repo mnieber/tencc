@@ -2,7 +2,7 @@ import ast
 import glob
 import os
 
-from lib.utils import import_path, propOrCreate
+from lib.utils import propOrCreate
 
 
 def _get_syntax_tree(filename):
@@ -12,7 +12,7 @@ def _get_syntax_tree(filename):
 
 def _create_module(module_filename, root_dir):
     return Module(
-        import_path(module_filename, root_dir), _get_syntax_tree(module_filename)
+        os.path.relpath(module_filename, root_dir), _get_syntax_tree(module_filename)
     )
 
 
@@ -39,15 +39,15 @@ class Component:
 
 
 class Module:
-    def __init__(self, path, syntax_tree):
-        self.path = path
+    def __init__(self, rel_path, syntax_tree):
+        self.rel_path = rel_path
         self.syntax_tree = syntax_tree
         self.component_by_name = _get_component_by_name(syntax_tree)
 
 
 class Package:
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, rel_path):
+        self.rel_path = rel_path
         self.module_by_path = {}
 
 
@@ -58,7 +58,7 @@ def get_package_by_path(root_dir):
     for module_filename in glob.glob(pattern, recursive=True):
         module = _create_module(module_filename, root_dir)
 
-        package_path = import_path(os.path.dirname(module_filename), root_dir)
+        package_path = os.path.relpath(os.path.dirname(module_filename), root_dir)
         package = propOrCreate(lambda x: Package(x), package_path, package_by_path)
         package.module_by_path[package_path] = module
 
