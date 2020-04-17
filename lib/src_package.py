@@ -32,10 +32,10 @@ def _get_component_by_name(syntax_tree):
 
 # A component is a top-level function or class
 class Component:
-    def __init__(self, name, syntax_tree_node, is_class):
+    def __init__(self, name, syntax_tree, is_class):
         self.name = name
         self.is_class = is_class
-        self.syntax_tree_node = syntax_tree_node
+        self.syntax_tree = syntax_tree
         self.domain_concepts = []
         self.tech_terms = []
 
@@ -50,7 +50,7 @@ class Module:
 class Package:
     def __init__(self, path):
         self.path = path
-        self.module_by_path = []
+        self.module_by_path = {}
 
 
 def get_package_by_path(root_dir):

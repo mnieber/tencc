@@ -11,3 +11,8 @@ def propOrCreate(f, prop, container):
     result = f(prop)
     container[prop] = result
     return result
+
+
+def values_sorted_on_key(x):
+    sorted_keys = sorted(x.keys())
+    return [x[k] for k in sorted_keys]

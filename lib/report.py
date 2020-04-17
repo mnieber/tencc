@@ -1,7 +1,6 @@
 import os
-from collections import OrderedDict
 
-import ruamel.yaml
+from lib.utils import values_sorted_on_key
 
 
 class Report:
@@ -12,35 +11,55 @@ class Report:
         self.text += x + os.linesep
 
     def add_package(self, package):
-        title = package.path or "Root package"
-        self.write(title)
-        self.write("*" * len(title))
-        self.write("")
+        memo = self.text
 
-        for module_name in sorted(package.module_by_name.keys()):
-            module = package.module_by_name[module_name]
-            self._add_module(module)
+        title = "Package %s" % package.path if package.path else "Root package"
+        self._write(title)
+        self._write("*" * len(title))
+        self._write("")
+
+        has_content = False
+        modules = values_sorted_on_key(package.module_by_path)
+        for module in modules:
+            if self._add_module(module):
+                has_content = True
+        if not has_content:
+            self.text = memo
+        return has_content
 
     def _add_module(self, module):
-        self.write(module.path)
-        self.write("-" * len(module.path))
-        self.write("")
+        memo = self.text
 
-        for component_name in sorted(module.component_by_name.keys()):
-            component = module.component_by_name[component_name]
-            self._add_component(component)
+        title = "Module %s" % module.path
+        self._write(title)
+        self._write("-" * len(title))
+        self._write("")
+
+        has_content = False
+        components = values_sorted_on_key(module.component_by_name)
+        for component in components:
+            if self._add_component(component):
+                has_content = True
+
+        if not has_content:
+            self.text = memo
+        return has_content
 
     def _add_component(self, component):
-        title_template = "Class %s" if component.is_class else "Function %s()"
-        title = title_template % component.name
-        self.write(title)
-        self.write("^" * len(title))
-        self.write("")
+        domain_concepts = sorted(term["forms"][0] for term in component.domain_concepts)
+        has_content = bool(domain_concepts)
+        if has_content:
+            title_template = "class %s" if component.is_class else "def %s()"
+            title = title_template % component.name
+            self._write(title)
+            self._write("^" * len(title))
+            self._write("")
 
-        domain_concepts = sorted(term.forms[0] for term in component.domain_concepts)
-        self.write("Domain concepts:")
-        for domain_concept in domain_concepts:
-            self.write("- %s" % domain_concept)
+            self._write("Domain concepts:")
+            for domain_concept in domain_concepts:
+                self._write("- %s" % domain_concept)
+            self._write("")
+        return has_content
 
 
 def create_report(package_by_path):
@@ -56,4 +75,4 @@ def create_report(package_by_path):
 
 def save_report(report, filename):
     with open(filename, "w") as ofs:
-        ofs.write(ruamel.yaml.round_trip_dump(report))
+        ofs.write(report)
