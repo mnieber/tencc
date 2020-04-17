@@ -32,11 +32,11 @@ if __name__ == "__main__":
 
     ctr.packages.find_packages()
     ctr.terms.load_terms()
-    ctr.reports.find_root_paths()
+    ctr.reports.find_report_paths()
 
-    if len(ctr.reports.root_paths) > 1:
+    if len(ctr.reports.report_paths) > 1:
         if args.ignore_subreports:
-            ctr.reports.reset_root_paths()
+            ctr.reports.reset_report_paths()
         elif not args.recreate_subreports:
             _exit()
 

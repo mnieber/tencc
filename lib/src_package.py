@@ -11,6 +11,7 @@ def _get_syntax_tree(filename):
 
 
 def _create_module(module_filename, root_dir):
+    __import__("pudb").set_trace()
     return Module(
         os.path.relpath(module_filename, root_dir), _get_syntax_tree(module_filename)
     )
@@ -54,12 +55,12 @@ class Package:
 def get_package_by_path(root_dir):
     package_by_path = {}
 
-    pattern = os.path.join(os.path.abspath(root_dir), "**/*.py")
+    pattern = os.path.join(root_dir, "**/*.py")
     for module_filename in glob.glob(pattern, recursive=True):
         module = _create_module(module_filename, root_dir)
 
         package_path = os.path.relpath(os.path.dirname(module_filename), root_dir)
         package = propOrCreate(lambda x: Package(x), package_path, package_by_path)
-        package.module_by_path[package_path] = module
+        package.module_by_path[module.rel_path] = module
 
     return package_by_path

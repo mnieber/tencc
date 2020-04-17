@@ -1,21 +1,21 @@
-from lib.report import find_root_paths, save_report
+from lib.report import find_report_paths, save_report
 
 
 class Reports():
     def __init__(self):
         self.root_dir = ""
-        self.reset_root_paths()
+        self.reset_report_paths()
         self.reports = []
 
-    def reset_root_paths(self):
-        self.root_paths = ["."]
+    def reset_report_paths(self):
+        self.report_paths = ["."]
 
-    def find_root_paths(self):
-        self.root_paths = find_root_paths(self.root_dir)
+    def find_report_paths(self):
+        self.report_paths = find_report_paths(self.root_dir)
 
     def save_reports(self):
         for report in self.reports:
-            save_report(report)
+            save_report(report, self.root_dir)
 
     @staticmethod
     def get(ctr):

@@ -6,12 +6,12 @@ from lib.utils import import_path, values_sorted_on_key
 
 
 class Report:
-    def __init__(self, root_dir):
-        self.root_dir = root_dir
+    def __init__(self, rel_path):
+        self.rel_path = rel_path
         self._init_text()
 
     def _init_text(self):
-        title = "Packages in path %s" % import_path(self.root_dir, "")
+        title = "Packages"
         self.text = ""
         self._write("#" * len(title))
         self._write(title)
@@ -22,16 +22,16 @@ class Report:
         self.text += x + os.linesep
 
     def _rel_path(self, path):
-        return os.path.relpath(path, self.root_dir)
+        return os.path.relpath(path, self.rel_path)
 
     def add_package(self, package):
         memo = self.text
         rel_path = self._rel_path(package.rel_path)
 
         title = (
-            "Package %s" % import_path(rel_path, "")
+            "Root package"
             if rel_path == "."
-            else "Root package"
+            else "Package %s" % import_path(rel_path, "")
         )
         self._write(title)
         self._write("*" * len(title))
@@ -81,38 +81,38 @@ class Report:
         return has_content
 
 
-def find_root_paths(root_dir):
-    root_paths = ["."]
-    pattern = os.path.join(os.path.abspath(root_dir), "**/tencc.rst")
+def find_report_paths(root_dir):
+    report_paths = ["."]
+    pattern = os.path.join(root_dir, "**/tencc.rst")
     for subreport_filename in glob.glob(pattern, recursive=True):
-        root_path = os.path.relpath(os.path.dirname(subreport_filename), root_dir)
-        if root_path not in root_paths:
-            root_paths.append(root_path)
-    return root_paths
+        report_path = os.path.relpath(os.path.dirname(subreport_filename), root_dir)
+        if report_path not in report_paths:
+            report_paths.append(report_path)
+    return report_paths
 
 
-def _get_root_path(path, root_paths):
+def _get_report_path(path, report_paths):
     best_path = ""
-    for root_path in root_paths:
-        if path.startswith(root_path):
-            if len(root_path) > len(best_path):
-                best_path = root_path
+    for report_path in report_paths:
+        if report_path == "." or path.startswith(report_path):
+            if len(report_path) > len(best_path):
+                best_path = report_path
     return best_path
 
 
-def create_reports(package_by_path, root_paths):
+def create_reports(package_by_path, report_paths):
     reports = []
 
-    package_by_path_by_root_path = defaultdict(lambda: dict())
+    package_by_path_by_report_path = defaultdict(lambda: dict())
     for path, package in package_by_path.items():
-        root_path = _get_root_path(path, root_paths)
-        pbp = package_by_path_by_root_path[root_path]
+        report_path = _get_report_path(path, report_paths)
+        pbp = package_by_path_by_report_path[report_path]
         pbp[path] = package
 
-    for root_path in root_paths:
-        pbp = package_by_path_by_root_path[root_path]
+    for report_path in report_paths:
+        pbp = package_by_path_by_report_path[report_path]
 
-        report = Report(root_path)
+        report = Report(report_path)
         reports.append(report)
 
         package_paths = sorted(pbp.keys())
@@ -123,7 +123,7 @@ def create_reports(package_by_path, root_paths):
     return reports
 
 
-def save_report(report):
-    filename = os.path.join(report.root_dir, "tencc.rst")
+def save_report(report, root_dir):
+    filename = os.path.join(root_dir, report.rel_path, "tencc.rst")
     with open(filename, "w") as ofs:
-        ofs.write(report)
+        ofs.write(report.text)
