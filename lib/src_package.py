@@ -2,7 +2,7 @@ import ast
 import glob
 import os
 
-from lib.utils import propOrCreate
+from lib.utils import import_path, propOrCreate
 
 
 def _get_syntax_tree(filename):
@@ -11,11 +11,9 @@ def _get_syntax_tree(filename):
 
 
 def _create_module(module_filename, root_dir):
-    def _module_import_path():
-        relpath = os.path.relpath(module_filename, root_dir)
-        return os.path.splitext(relpath)[0].replace("/", ".")
-
-    return Module(_module_import_path(), _get_syntax_tree(module_filename))
+    return Module(
+        import_path(module_filename, root_dir), _get_syntax_tree(module_filename)
+    )
 
 
 def _get_component_by_name(syntax_tree):
@@ -58,11 +56,10 @@ def get_package_by_path(root_dir):
 
     pattern = os.path.join(os.path.abspath(root_dir), "**/*.py")
     for module_filename in glob.glob(pattern, recursive=True):
-        rel_module_filename = os.path.relpath(module_filename, root_dir)
         module = _create_module(module_filename, root_dir)
 
-        package_path = os.path.dirname(rel_module_filename)
+        package_path = import_path(os.path.dirname(module_filename), root_dir)
         package = propOrCreate(lambda x: Package(x), package_path, package_by_path)
-        package.module_by_path[module.path] = module
+        package.module_by_path[package_path] = module
 
     return package_by_path

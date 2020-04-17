@@ -1,10 +1,5 @@
-from facets import Packages, Terms, i_, map_datas
+from facets import Packages, Terms, i_, io_, map_datas
 from lib.add_terms import add_terms
-
-
-def action_load_terms(ctr):
-    terms = Terms.get(ctr)
-    terms.term_book.load(terms.terms_filename)
 
 
 def action_add_terms_to_packages(ctr):
@@ -14,7 +9,7 @@ def action_add_terms_to_packages(ctr):
 
     return map_datas(
         i_(Packages, "package_by_path"),
-        i_(Terms, "term_book"),
+        io_(Terms, "term_book"),
         #
         transform=transform,
     )(ctr)

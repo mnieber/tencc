@@ -1,3 +1,5 @@
+import os
+
 import ramda as _
 
 
@@ -16,3 +18,8 @@ def propOrCreate(f, prop, container):
 def values_sorted_on_key(x):
     sorted_keys = sorted(x.keys())
     return [x[k] for k in sorted_keys]
+
+
+def import_path(filename, root_dir):
+    relpath = os.path.relpath(filename, root_dir)
+    return os.path.splitext(relpath)[0].replace("/", ".")

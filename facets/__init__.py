@@ -1,6 +1,7 @@
 import ramda as _
 
 from .packages import Packages, init_packages  # noqa
+from .reports import Reports, init_reports  # noqa
 from .terms import Terms, init_terms  # noqa
 
 
@@ -8,6 +9,9 @@ def i_(facet_class, member, prefix=None, alt_name=None):
     arg_name = (alt_name if alt_name else prefix + '_' +
                 member if prefix else member)
     return ('in', facet_class, member, arg_name)
+
+
+io_ = i_
 
 
 def o_(facet_class, member):
